@@ -1,0 +1,12 @@
+{
+    "query": "MyTable | project Value",
+    "environment": "sentinel",
+    "local_data": {
+        "tables": {
+            "MyTable": {
+                "Timestamp": "datetime",
+                "Value": "string"
+            }
+        }
+    }
+}

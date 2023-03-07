@@ -1,0 +1,4 @@
+{
+    "query": "AACAudit | project a=Type",
+    "environment": "sentinel"
+}

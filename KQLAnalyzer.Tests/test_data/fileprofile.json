@@ -1,0 +1,4 @@
+{
+    "query": "print SHA1='x', Foo=123 | invoke FileProfile(SHA1)",
+    "environment": "m365"
+}

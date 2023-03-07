@@ -1,0 +1,4 @@
+{
+    "query": "print SHA1='x' | invoke FileProfile('SHA1')",
+    "environment": "sentinel"
+}

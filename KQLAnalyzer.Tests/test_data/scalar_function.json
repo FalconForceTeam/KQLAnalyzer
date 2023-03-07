@@ -1,0 +1,18 @@
+{
+    "query": "print a=MyScalar('foo')",
+    "environment": "sentinel",
+    "local_data": {
+        "scalar_functions": {
+            "MyScalar": {
+                "output_type": "bool",
+                "arguments": [
+                    {
+                        "name": "foo",
+                        "type": "string",
+                        "optional": true
+                    }
+                ]
+            }
+        }
+    }
+}

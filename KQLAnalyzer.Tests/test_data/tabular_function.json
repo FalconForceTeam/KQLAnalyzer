@@ -1,0 +1,20 @@
+{
+    "query": "MyFunction() | union MyFunction('foo')",
+    "environment": "sentinel",
+    "local_data": {
+        "tabular_functions": {
+            "MyFunction": {
+                "output_columns": {
+                    "output_foo": "string"
+                },
+                "arguments": [
+                    {
+                        "name": "foo",
+                        "type": "string",
+                        "optional": true
+                    }
+                ]
+            }
+        }
+    }
+}

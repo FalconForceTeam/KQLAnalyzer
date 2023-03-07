@@ -1,0 +1,305 @@
+{
+  "m365": {},
+  "sentinel": {
+    "AzureDiagnostics": {
+      "TimeGenerated": "datetime",
+      "addedAccessPolicy_TenantId_g": "string",
+      "addedAccessPolicy_Permissions_certificates_s": "string",
+      "addedAccessPolicy_Permissions_secrets_s": "string",
+      "addedAccessPolicy_Permissions_keys_s": "string",
+      "identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s": "string",
+      "addedAccessPolicy_ObjectId_g": "string",
+      "removedAccessPolicy_ObjectId_g": "string",
+      "identity_claim_http_schemas_microsoft_com_identity_claims_objectidentifier_g": "string",
+      "identity_claim_oid_g": "string",
+      "identity_claim_upn_s": "string"
+    },
+    "SecurityEvent": {
+      "AccessList": "string"
+    },
+    "AuditLogs": {
+      "TenantId": "string"
+    },
+    "AADSignInEventsBeta": {
+      "Timestamp": "datetime"
+    },
+    "AADSpnSignInEventsBeta": {
+      "Timestamp": "datetime"
+    },
+    "AlertEvidence": {
+      "Timestamp": "datetime"
+    },
+    "AlertInfo": {
+      "Timestamp": "datetime"
+    },
+    "CloudAppEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceFileCertificateInfo": {
+      "Timestamp": "datetime"
+    },
+    "DeviceFileEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceImageLoadEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceInfo": {
+      "Timestamp": "datetime"
+    },
+    "DeviceLogonEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceNetworkEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceNetworkInfo": {
+      "Timestamp": "datetime"
+    },
+    "DeviceProcessEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceRegistryEvents": {
+      "Timestamp": "datetime"
+    },
+    "DeviceTvmInfoGathering": {
+      "Timestamp": "datetime"
+    },
+    "DeviceTvmSecureConfigurationAssessment": {
+      "Timestamp": "datetime"
+    },
+    "EmailAttachmentInfo": {
+      "Timestamp": "datetime"
+    },
+    "EmailEvents": {
+      "Timestamp": "datetime"
+    },
+    "EmailPostDeliveryEvents": {
+      "Timestamp": "datetime"
+    },
+    "EmailUrlInfo": {
+      "Timestamp": "datetime"
+    },
+    "IdentityDirectoryEvents": {
+      "Timestamp": "datetime"
+    },
+    "IdentityLogonEvents": {
+      "Timestamp": "datetime"
+    },
+    "IdentityQueryEvents": {
+      "Timestamp": "datetime"
+    },
+    "UrlClickEvents": {
+      "Timestamp": "datetime"
+    },
+    "SailPointIDN_Events_CL": {
+      "TenantId": "string",
+      "SourceSystem": "string",
+      "MG": "string",
+      "ManagementGroupName": "string",
+      "TimeGenerated": "datetime",
+      "Computer": "string",
+      "RawData": "string",
+      "attributes_membership_before_s": "string",
+      "attributes_membership_after_s": "string",
+      "attributes_accessProfiles_after_s": "string",
+      "attributes_modified_before_t": "datetime",
+      "attributes_modified_after_t": "datetime",
+      "attributes_accessProfiles_before_s": "string",
+      "attributes_newObj_s": "string",
+      "attributes_processId_g": "string",
+      "attributes_clientId_g": "string",
+      "attributes_clientName_s": "string",
+      "attributes_creationTime_t": "datetime",
+      "attributes_appRefs_s": "string",
+      "attributes_attributeValue_g": "string",
+      "attributes_accountName_g": "string",
+      "attributes_sourceName_after_s": "string",
+      "attributes_sourceName_before_s": "string",
+      "attributes_sourceId_after_s": "string",
+      "attributes_type_after_s": "string",
+      "attributes_type_before_s": "string",
+      "attributes_sourceId_before_s": "string",
+      "actor_name_g": "string",
+      "ipAddress_g": "string",
+      "attributes_finalRecipient_s": "string",
+      "attributes_hostName_g": "string",
+      "attributes_multiValue_s": "string",
+      "attributes_synchronizeTo_s": "string",
+      "attributes_synchronizeFrom_s": "string",
+      "attributes_sourceName_g": "string",
+      "attributes_accessProfileId_g": "string",
+      "attributes_roleId_g": "string",
+      "attributes_enabled_s": "string",
+      "attributes_segment_Ids_s": "string",
+      "attributes_id_g": "string",
+      "attributes_segment_s": "string",
+      "attributes_provisioningResult_s": "string",
+      "attributes_previousValue_s": "string",
+      "attributes_identityCount_after_s": "string",
+      "attributes_identityCount_before_s": "string",
+      "attributes_addedAttributes_s": "string",
+      "attributes_changeset_s": "string",
+      "attributes_removedAttributes_s": "string",
+      "attributes_accountId_s": "string",
+      "attributes_segments_before_s": "string",
+      "attributes_segments_after_s": "string",
+      "attributes_selector_after_s": "string",
+      "attributes_selector_before_s": "string",
+      "attributes_taskResultId_g": "string",
+      "attributes_role_ids_s": "string",
+      "attributes_access_profile_ids_s": "string",
+      "attributes_entitlement_ids_s": "string",
+      "attributes_reviewerComment_s": "string",
+      "attributes_reviewerCommentDate_s": "string",
+      "attributes_requesterCommentsDate_s": "string",
+      "attributes_entitlementCount_after_s": "string",
+      "attributes_entitlementCount_before_s": "string",
+      "attributes_name_before_s": "string",
+      "attributes_description_before_s": "string",
+      "attributes_description_after_s": "string",
+      "attributes_name_after_s": "string",
+      "attributes_displayName_before_s": "string",
+      "attributes_displayName_after_s": "string",
+      "target_name_g": "string",
+      "attributes_accountSelector_before_s": "string",
+      "attributes_ownerId_after_g": "string",
+      "attributes_ownerId_before_g": "string",
+      "attributes_entitlements_before_s": "string",
+      "attributes_entitlements_after_s": "string",
+      "attributes_accountSelector_after_s": "string",
+      "attributes_owner_after_s": "string",
+      "attributes_owner_before_s": "string",
+      "attributes_info_g": "string",
+      "attributes_oldOwner_s": "string",
+      "attributes_newOwner_s": "string",
+      "attributes_originOrg_s": "string",
+      "attributes_originUsername_s": "string",
+      "attributes_authTenant_s": "string",
+      "attributes_authUserName_s": "string",
+      "attributes_role_s": "string",
+      "attributes_expirationDate_s": "string",
+      "attributes_errors_s": "string",
+      "attributes_description_s": "string",
+      "attributes_workitem_g": "string",
+      "attributes_name_s": "string",
+      "attributes_requestable_after_s": "string",
+      "attributes_revokeRequestApprovalSchemes_before_s": "string",
+      "attributes_requestable_before_s": "string",
+      "attributes_revokeRequestApprovalSchemes_after_s": "string",
+      "attributes_comment_s": "string",
+      "attributes_segmentId_g": "string",
+      "attributes_object_type_s": "string",
+      "attributes_deniedCommentsRequired_after_s": "string",
+      "attributes_disabled_before_s": "string",
+      "attributes_disabled_after_s": "string",
+      "attributes_requestCommentsRequired_after_s": "string",
+      "attributes_approvalSchemes_before_s": "string",
+      "attributes_deniedCommentsRequired_before_s": "string",
+      "attributes_requestCommentsRequired_before_s": "string",
+      "attributes_approvalSchemes_after_s": "string",
+      "attributes_accessProfileIds_after_s": "string",
+      "attributes_accessProfileIds_before_s": "string",
+      "attributes_requestedAppName_s": "string",
+      "attributes_requestedAppRoleId_g": "string",
+      "attributes_requestedAppId_s": "string",
+      "attributes_accountUuid_g": "string",
+      "attributes_oldState_s": "string",
+      "attributes_newState_s": "string",
+      "attributes_objectType_s": "string",
+      "attributes_customerName_s": "string",
+      "attributes_customerId_g": "string",
+      "attributes_qualifier_s": "string",
+      "attributes_dagId_s": "string",
+      "attributes_details_s": "string",
+      "attributes_aggregationId_g": "string",
+      "attributes_approvalSchemesToOwnerMap_s": "string",
+      "attributes_preventativeSODResultsJSON_s": "string",
+      "attributes_interface_s": "string",
+      "attributes_operation_s": "string",
+      "attributes_approvalSchemesList_s": "string",
+      "attributes_flow_s": "string",
+      "attributes_IdnAccessRequestAttributes_s": "string",
+      "attributes_accountName_s": "string",
+      "attributes_attributeName_s": "string",
+      "attributes_attributeValue_s": "string",
+      "attributes_accountUuid_s": "string",
+      "attributes_cloudAppName_s": "string",
+      "attributes_appId_g": "string",
+      "attributes_sourceId_s": "string",
+      "attributes_removeDate_t": "datetime",
+      "details_s": "string",
+      "attributes_accountActivityId_g": "string",
+      "attributes_accessItemType_s": "string",
+      "attributes_comments_s": "string",
+      "attributes_accessItemId_g": "string",
+      "attributes_accessItemName_s": "string",
+      "IPAddress": "string",
+      "details_g": "string",
+      "attributes_pod_s": "string",
+      "attributes_org_s": "string",
+      "attributes_info_s": "string",
+      "id_s": "string",
+      "attributes_sourceName_s": "string",
+      "org_s": "string",
+      "pod_s": "string",
+      "created_t": "datetime",
+      "id_g": "string",
+      "action_s": "string",
+      "type_s": "string",
+      "actor_name_s": "string",
+      "target_name_s": "string",
+      "stack_s": "string",
+      "trackingNumber_g": "string",
+      "attributes_hostName_s": "string",
+      "attributes_userId_s": "string",
+      "attributes_scope_s": "string",
+      "objects_s": "string",
+      "operation_s": "string",
+      "status_s": "string",
+      "technicalName_s": "string",
+      "name_s": "string",
+      "synced_t": "datetime",
+      "_type_s": "string",
+      "_version_s": "string",
+      "Type": "string",
+      "_ResourceId": "string"
+    },
+    "ABAPAuditLog_CL": {
+      "TenantId": "string",
+      "SourceSystem": "string",
+      "MG": "string",
+      "ManagementGroupName": "string",
+      "TimeGenerated": "datetime",
+      "Computer": "string",
+      "RawData": "string",
+      "SystemID_s": "string",
+      "Instance_s": "string",
+      "MessageText_s": "string",
+      "MessageClass_s": "string",
+      "MessageID_s": "string",
+      "AlertSeverity_d": "real",
+      "ClientID_s": "string",
+      "User_s": "string",
+      "TransactionCode_s": "string",
+      "ABAPProgramName_s": "string",
+      "AuditClassID_d": "real",
+      "AlertSeverityText_s": "string",
+      "TerminalIPv6_s": "string",
+      "Variable1_s": "string",
+      "Variable2_s": "string",
+      "Variable3_s": "string",
+      "Variable4_s": "string",
+      "SAPProcesType_s": "string",
+      "SAPWPName_s": "string",
+      "Email_s": "string",
+      "SystemNumber_s": "string",
+      "Host_s": "string",
+      "Type": "string",
+      "_ResourceId": "string"
+    }
+  }
+}

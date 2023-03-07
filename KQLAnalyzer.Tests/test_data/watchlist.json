@@ -1,0 +1,11 @@
+{
+    "query": "let RuleId='xyz';_GetWatchlist(strcat(strcat(RuleId,'_','foo'),'abc'))",
+    "environment": "sentinel",
+    "local_data": {
+        "watchlists": {
+            "xyz_fooabc": {
+                "foo": "string"
+            }
+        }
+    }
+}
