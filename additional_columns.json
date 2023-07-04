@@ -300,6 +300,32 @@
       "Host_s": "string",
       "Type": "string",
       "_ResourceId": "string"
+    },
+    "MicrosoftGraphActivityLogs": {
+      "TenantId": "string",
+      "TimeGenerated": "datetime",
+      "Location":"string",
+      "RequestId":"string",
+      "OperationId":"string",
+      "ClientRequestId":"string",
+      "ApiVersion":"string",
+      "RequestMethod":"string",
+      "ResponseStatusCode":"int",
+      "AadTenantId":"string",
+      "IpAddress":"string",
+      "UserAgent":"string",
+      "RequestUri":"string",
+      "DurationMs":"int",
+      "ResponseSizeBytes":"int",
+      "SignInActivityId":"string",
+      "Roles":"string",
+      "TokenIssuedAt":"datetime",
+      "AppId":"string",
+      "UserId":"string",
+      "ServicePrincipalId":"string",
+      "Scopes":"string",
+      "SourceSystem":"string",
+      "Type":"string"
     }
   }
 }
