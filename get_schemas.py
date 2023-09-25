@@ -2,13 +2,23 @@ import glob
 import json
 import os
 import textwrap
+import re
 
 # Extract tables from markdown files in Microsoft documentation.
-def get_table_details(fn):
+def get_table_details(fn, base_dir):
     inside_table = False
     table_name = None
     details = {}
-    for line in open(fn):
+    data = open(fn).read()
+    # Parse [!INCLUDE [awscloudtrail](../includes/awscloudtrail-include.md)]
+    for include_fn in re.findall(r'\[!INCLUDE \[.*?\]\((.*?)\)\]', data):
+        include_path = os.path.abspath(os.path.join(os.path.dirname(fn), include_fn))
+        parsed_dir = os.path.dirname(os.path.dirname(include_path)) + os.sep
+        if not parsed_dir.startswith(base_dir + os.sep):
+            raise Exception(f"Include path {parsed_dir} is not in {base_dir}")
+        data += open(include_path).read() + '\n'
+
+    for line in data.splitlines():
         line = line.strip()
         if not line:
             continue
@@ -33,6 +43,8 @@ def get_table_details(fn):
         column_type = column_details[2].lower()
         if column_type == 'bigint':
             column_type = 'long'
+        if column_type == 'list':
+            column_type = 'string' # some tables refer to non-existing type 'list'
         if column_name == 'Column' or column_name.startswith('--') or not column_name:
             continue
         details[column_name] = column_type
@@ -48,12 +60,11 @@ def merge_additional_columns(tables, env_name):
 
 environments = {
     'm365': {
-         'dir_name': 'defender_docs',
+         'dir_name': 'microsoft-365-docs/microsoft-365/security/defender',
+         'base_dir': 'microsoft-365-docs',
          'glob': '*-table.md',
          'help': textwrap.dedent("""
-            git clone https://github.com/MicrosoftDocs/microsoft-365-docs
-            mv microsoft-365-docs/microsoft-365/security/defender defender_docs
-            rm -Rf microsoft-365-docs # optional to save disk space
+            git clone --depth=1 https://github.com/MicrosoftDocs/microsoft-365-docs
         """),
         'magic_functions': [
             'FileProfile',
@@ -61,12 +72,11 @@ environments = {
         ]
     },
     'sentinel': {
-       'dir_name': 'sentinel_docs',
+       'dir_name': 'azure-reference-other/azure-monitor-ref/tables',
+       'base_dir': 'azure-reference-other',
          'glob': '*.md',
        'help': textwrap.dedent("""
-            git clone https://github.com/MicrosoftDocs/azure-reference-other
-            mv azure-reference-other/azure-monitor-ref/tables sentinel_docs
-            rm -Rf azure-reference-other # optional to save disk space
+            git clone --depth=1 https://github.com/MicrosoftDocs/azure-reference-other
         """),
     }
 }
@@ -77,10 +87,11 @@ def main():
         if not os.path.exists(env_details['dir_name']):
             print(f"ERROR: {env_details['dir_name']} does not exist. To create it, run:\n{env_details['help'].strip()}")
             exit(1)
+        base_dir = os.path.abspath(env_details['base_dir'])
         tables = {}
         glob_pattern = os.path.join(env_details['dir_name'], env_details['glob'])
         for table_fn in sorted(glob.glob(glob_pattern)):
-            table_name, details = get_table_details(table_fn)
+            table_name, details = get_table_details(table_fn, base_dir)
             tables[table_name] = details
         merge_additional_columns(tables, env_name)
         details = dict(tables=tables, magic_functions=env_details.get('magic_functions', []))
