@@ -74,7 +74,7 @@ The REST web service will be available at http://localhost:8000.
 
 The following endpoints are available:
 * POST /api/analyze - Analyze a query providing a query and platform.
-* GET  /api/platforms - List available platforms.
+* GET  /api/environments - List available platforms.
 
 Example usage:
 ```
