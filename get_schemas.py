@@ -60,11 +60,11 @@ def merge_additional_columns(tables, env_name):
 
 environments = {
     'm365': {
-         'dir_name': 'microsoft-365-docs/microsoft-365/security/defender',
-         'base_dir': 'microsoft-365-docs',
+         'dir_name': 'defender-docs/defender-xdr',
+         'base_dir': 'defender-docs',
          'glob': '*-table.md',
          'help': textwrap.dedent("""
-            git clone --depth=1 https://github.com/MicrosoftDocs/microsoft-365-docs
+            git clone --depth=1 https://github.com/MicrosoftDocs/defender-docs
         """),
         'magic_functions': [
             'FileProfile',
