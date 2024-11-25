@@ -4,6 +4,8 @@ import os
 import textwrap
 import re
 
+valid_types = {'datetime': True, 'string': True, 'int': True, 'boolean': True, 'long': True, 'bool': True, 'dynamic': True, 'real': True, 'guid': True, 'double': True}
+
 # Extract tables from markdown files in Microsoft documentation.
 def get_table_details(fn, base_dir):
     inside_table = False
@@ -12,6 +14,9 @@ def get_table_details(fn, base_dir):
     data = open(fn).read()
     # Parse [!INCLUDE [awscloudtrail](../includes/awscloudtrail-include.md)]
     for include_fn in re.findall(r'\[!INCLUDE \[.*?\]\((.*?)\)\]', data):
+        if 'reusable-content' in include_fn:
+            print(include_fn)
+            exit()
         include_path = os.path.abspath(os.path.join(os.path.dirname(fn), include_fn))
         parsed_dir = os.path.dirname(os.path.dirname(include_path)) + os.sep
         if not parsed_dir.startswith(base_dir + os.sep):
@@ -24,7 +29,7 @@ def get_table_details(fn, base_dir):
             continue
         line = line.replace('`','')
         if not table_name and line.startswith('# '):
-            table_name = line.split()[-1]
+            table_name = line.split()[1]
         if (
             line.lower().startswith('## columns')
             or line.lower().startswith('| column name')
@@ -34,9 +39,11 @@ def get_table_details(fn, base_dir):
             continue
         # if not line.startswith('|'):
         #     inside_table = False
+        if line.startswith('#'):
+            inside_table = False
         if not inside_table or not line.startswith('|'):
             continue
-        column_details = line.replace(' ','').split('|')
+        column_details = line.replace(' ','').replace('\t','').split('|')
         if len(column_details) < 4:
             continue
         column_name = column_details[1]
@@ -47,6 +54,8 @@ def get_table_details(fn, base_dir):
             column_type = 'string' # some tables refer to non-existing type 'list'
         if column_name == 'Column' or column_name.startswith('--') or not column_name:
             continue
+        if not column_type in valid_types:
+            raise Exception(f"{column_type} is not a valid column type")
         details[column_name] = column_type
     return table_name, details
 
@@ -60,11 +69,11 @@ def merge_additional_columns(tables, env_name):
 
 environments = {
     'm365': {
-         'dir_name': 'microsoft-365-docs/microsoft-365/security/defender',
-         'base_dir': 'microsoft-365-docs',
+         'dir_name': 'defender-docs/defender-xdr',
+         'base_dir': 'defender-docs',
          'glob': '*-table.md',
          'help': textwrap.dedent("""
-            git clone --depth=1 https://github.com/MicrosoftDocs/microsoft-365-docs
+            git clone --depth=1 https://github.com/MicrosoftDocs/defender-docs
         """),
         'magic_functions': [
             'FileProfile',
@@ -76,7 +85,7 @@ environments = {
        'base_dir': 'azure-reference-other',
          'glob': '*.md',
        'help': textwrap.dedent("""
-            git clone --depth=1 https://github.com/MicrosoftDocs/azure-reference-other
+            git clone https://github.com/MicrosoftDocs/azure-reference-other ; git checkout 97f4433e37c4a95922407dcc4c3014c4badb6881
         """),
     }
 }
