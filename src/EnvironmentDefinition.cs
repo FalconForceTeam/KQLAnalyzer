@@ -12,7 +12,7 @@ public class EnvironmentDefinition
         // The join is there to get the same behavior as the FileProfile function where if a column
         // named GlobalPrevalence or any other output column is already present in the table,
         // it will not be overwritten but a new  column called GlobalPrevalence1 will be added.
-        new(
+        new (
             "FileProfile",
             "(T:(*), x:string='',y:string='')",
             """
@@ -29,7 +29,7 @@ public class EnvironmentDefinition
         );
 
     private static readonly FunctionSymbol DeviceFromIPFunction =
-        new(
+        new (
             "DeviceFromIP",
             "(T:(*), x:string='',y:datetime='')",
             """

@@ -72,8 +72,7 @@ namespace KQLAnalyzerTests
         public void SentinelNoFileProfile()
         {
             var results = AnalyzeFromJson("test_data/sentinel_no_fileprofile.json");
-            Assert.NotEmpty(
-                results.ParsingErrors.Where(
+            Assert.Contains(results.ParsingErrors, (
                     e => e.Code == "KS211" && e.Message.Contains("FileProfile")
                 )
             );
@@ -84,11 +83,11 @@ namespace KQLAnalyzerTests
         {
             var results = AnalyzeFromJson("test_data/fileprofile.json");
             Assert.Empty(results.ParsingErrors);
-            Assert.NotEmpty(results.OutputColumns.Where(e => e.Key == "Issuer")); // Add FileProfile columns
+            Assert.Contains(results.OutputColumns,(e => e.Key == "Issuer")); // Add FileProfile columns
             // SHA1 exists in both input and in FileProfile so there should also be a SHA11
-            Assert.NotEmpty(results.OutputColumns.Where(e => e.Key == "SHA1"));
-            Assert.NotEmpty(results.OutputColumns.Where(e => e.Key == "SHA11"));
-            Assert.NotEmpty(results.OutputColumns.Where(e => e.Key == "Foo")); // Original input column is preserved
+            Assert.Contains(results.OutputColumns,(e => e.Key == "SHA1"));
+            Assert.Contains(results.OutputColumns,(e => e.Key == "SHA11"));
+            Assert.Contains(results.OutputColumns,(e => e.Key == "Foo")); // Original input column is preserved
         }
 
         [Fact]
@@ -107,7 +106,7 @@ namespace KQLAnalyzerTests
         public void TabularFunctionRequiredArgs()
         {
             var results = AnalyzeFromJson("test_data/tabular_function_required_args.json");
-            Assert.NotEmpty(results.ParsingErrors.Where(e => e.Code == "KS119")); // Expect KS119 error The function 'MyFunction' expects 1 argument.
+            Assert.Contains(results.ParsingErrors,(e => e.Code == "KS119")); // Expect KS119 error The function 'MyFunction' expects 1 argument.
         }
 
         [Fact]
