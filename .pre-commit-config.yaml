@@ -1,0 +1,69 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+        exclude: \.(ps1|bat|cmd)$
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        exclude: \.bru$
+        args: [--markdown-linebreak-ext=md]
+
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-json
+        exclude: \.vscode/
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: forbid-submodules
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 3.2.1
+    hooks:
+      - id: editorconfig-checker
+
+  # - repo: https://github.com/hadolint/hadolint
+  #   rev: v2.13.1-beta
+  #   hooks:
+  #     - id: hadolint
+  #       files: Dockerfile
+
+  # Slow
+  # - repo: https://github.com/jepper/pre-commit-psscriptanalyzer
+  #   rev: v0.0.4
+  #   hooks:
+  #   - id: psscriptanalyzer
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+
+  # No pyproject.toml in root
+  # - repo: https://github.com/psf/black
+  #   rev: 25.1.0
+  #   hooks:
+  #     - id: black
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.16.0
+    hooks:
+      - id: mypy
+        args:
+          - --disable-error-code=import-untyped
+          - --disable-error-code=annotation-unchecked
+          - --explicit-package-bases
+          - --ignore-missing-imports

@@ -1,0 +1,25 @@
+* text=auto eol=lf
+
+*.png       binary
+
+*.html      text diff=html
+*.svg       text diff=html
+
+*.py        text diff=python
+*.pyi       text diff=python
+
+*.md        text diff=markdown
+
+*.json      text diff=dyff
+*.yml       text diff=dyff
+*.yaml      text diff=dyff
+
+poetry.lock merge=binary
+
+# Windows
+*.bat       eol=crlf
+*.cmd       eol=crlf
+*.ps1       eol=crlf
+
+# Linux / macOS
+*.sh        text diff=bash
