@@ -4,7 +4,7 @@ import os
 import textwrap
 import re
 
-valid_types = {'datetime': True, 'string': True, 'int': True, 'boolean': True, 'long': True, 'bool': True, 'dynamic': True, 'real': True, 'guid': True, 'double': True}
+valid_types = {'datetime': True, 'string': True, 'int': True, 'boolean': True, 'long': True, 'bool': True, 'dynamic': True, 'real': True, 'guid': True, 'double': True, 'object': True, 'enum': True, 'decimal': True, 'timespan': True}
 
 # Extract tables from markdown files in Microsoft documentation.
 def get_table_details(fn, base_dir):
@@ -52,10 +52,21 @@ def get_table_details(fn, base_dir):
             column_type = 'long'
         if column_type == 'list':
             column_type = 'string' # some tables refer to non-existing type 'list'
+        if column_type == 'nullablebool':
+            column_type = 'boolean'
+        if column_type == 'integer':
+            column_type = 'int'
+        if column_type == 'array':
+            column_type = 'string'
+        if column_type == 'object':
+            column_type = 'dynamic'  # object types should map to dynamic in KQL
+        if column_type == 'enum':
+            column_type = 'string'  # enum types should map to string
         if column_name == 'Column' or column_name.startswith('--') or not column_name:
             continue
         if not column_type in valid_types:
-            raise Exception(f"{column_type} is not a valid column type")
+            print(f"Warning: Unknown column type '{column_type}' in {fn}, mapping to 'string'")
+            column_type = 'string'  # Use string as a safe fallback for unknown types
         details[column_name] = column_type
     return table_name, details
 

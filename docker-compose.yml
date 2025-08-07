@@ -1,0 +1,9 @@
+services:
+  kql-analyzer:
+    build: .
+    container_name: kql-analyzer
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
