@@ -9,9 +9,27 @@ This tool can be used to analyze KQL queries and provide the following informati
 
 ## Usage
 
-The tool can be used in two different ways:
+The tool can be used in three different ways:
 
-### 1. As a command line tool
+### 1. As a Docker container
+
+To run the KQL Analyzer using Docker:
+
+```bash
+# Build and start the container
+docker compose up -d
+
+# The API will be available at http://localhost:8000
+curl http://localhost:8000/api/environments
+
+# Analyze a query
+curl -X POST -H "Content-Type: application/json" -d@query.json http://localhost:8000/api/analyze
+
+# Stop the container
+docker compose down
+```
+
+### 2. As a command line tool
 
 The tool can be used as a command line tool to analyze a single query.
 
@@ -61,7 +79,7 @@ For this example the following output is given by the tool:
 }
 ```
 
-### 2. As a REST web service
+### 3. As a REST web service
 
 The tool can also be used as a REST web service to analyze multiple queries without having to restart the executable each time.
 
