@@ -445,6 +445,238 @@ namespace KQLAnalyzer
             return sb.ToString();
         }
 
+        private static bool IsIdentifierStart(char c)
+        {
+            return c == '_' || char.IsLetter(c);
+        }
+
+        private static bool IsIdentifierPart(char c)
+        {
+            return c == '_' || char.IsLetterOrDigit(c);
+        }
+
+        private static bool StartsWithIgnoreCase(string text, int index, string value)
+        {
+            if (index < 0 || index + value.Length > text.Length)
+            {
+                return false;
+            }
+
+            return string.Compare(text, index, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0;
+        }
+
+        private static string NormalizeWorkspaceQualifiedTableReferences(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return query;
+            }
+
+            var sb = new System.Text.StringBuilder(query.Length);
+            var inSingle = false;
+            var inDouble = false;
+            var inLineComment = false;
+            var inBlockComment = false;
+
+            for (var i = 0; i < query.Length; i++)
+            {
+                var ch = query[i];
+
+                if (inLineComment)
+                {
+                    sb.Append(ch);
+                    if (ch == '\n' || ch == '\r')
+                    {
+                        inLineComment = false;
+                    }
+                    continue;
+                }
+
+                if (inBlockComment)
+                {
+                    sb.Append(ch);
+                    if (ch == '*' && i + 1 < query.Length && query[i + 1] == '/')
+                    {
+                        sb.Append('/');
+                        i++;
+                        inBlockComment = false;
+                    }
+                    continue;
+                }
+
+                if (inSingle)
+                {
+                    sb.Append(ch);
+                    if (ch == '\'')
+                    {
+                        if (i + 1 < query.Length && query[i + 1] == '\'')
+                        {
+                            sb.Append(query[i + 1]);
+                            i++;
+                        }
+                        else
+                        {
+                            inSingle = false;
+                        }
+                    }
+                    continue;
+                }
+
+                if (inDouble)
+                {
+                    sb.Append(ch);
+                    if (ch == '\\' && i + 1 < query.Length)
+                    {
+                        sb.Append(query[i + 1]);
+                        i++;
+                        continue;
+                    }
+
+                    if (ch == '"')
+                    {
+                        inDouble = false;
+                    }
+                    continue;
+                }
+
+                if (ch == '-' && i + 1 < query.Length && query[i + 1] == '-')
+                {
+                    sb.Append(ch);
+                    sb.Append(query[i + 1]);
+                    i++;
+                    inLineComment = true;
+                    continue;
+                }
+
+                if (ch == '/' && i + 1 < query.Length && query[i + 1] == '*')
+                {
+                    sb.Append(ch);
+                    sb.Append(query[i + 1]);
+                    i++;
+                    inBlockComment = true;
+                    continue;
+                }
+
+                if (ch == '\'')
+                {
+                    sb.Append(ch);
+                    inSingle = true;
+                    continue;
+                }
+
+                if (ch == '"')
+                {
+                    sb.Append(ch);
+                    inDouble = true;
+                    continue;
+                }
+
+                if (
+                    StartsWithIgnoreCase(query, i, "workspace")
+                    && (i == 0 || !IsIdentifierPart(query[i - 1]))
+                    && (i + 9 >= query.Length || !IsIdentifierPart(query[i + 9]))
+                )
+                {
+                    var j = i + 9;
+                    while (j < query.Length && char.IsWhiteSpace(query[j]))
+                    {
+                        j++;
+                    }
+
+                    if (j < query.Length && query[j] == '(')
+                    {
+                        j++;
+                        while (j < query.Length && char.IsWhiteSpace(query[j]))
+                        {
+                            j++;
+                        }
+
+                        if (j < query.Length && (query[j] == '\'' || query[j] == '"'))
+                        {
+                            var quote = query[j];
+                            j++;
+                            var literalClosed = false;
+
+                            while (j < query.Length)
+                            {
+                                if (quote == '\'' && query[j] == '\'')
+                                {
+                                    if (j + 1 < query.Length && query[j + 1] == '\'')
+                                    {
+                                        j += 2;
+                                        continue;
+                                    }
+
+                                    j++;
+                                    literalClosed = true;
+                                    break;
+                                }
+
+                                if (quote == '"' && query[j] == '"')
+                                {
+                                    j++;
+                                    literalClosed = true;
+                                    break;
+                                }
+
+                                if (quote == '"' && query[j] == '\\' && j + 1 < query.Length)
+                                {
+                                    j += 2;
+                                    continue;
+                                }
+
+                                j++;
+                            }
+
+                            if (literalClosed)
+                            {
+                                while (j < query.Length && char.IsWhiteSpace(query[j]))
+                                {
+                                    j++;
+                                }
+
+                                if (j < query.Length && query[j] == ')')
+                                {
+                                    j++;
+                                    while (j < query.Length && char.IsWhiteSpace(query[j]))
+                                    {
+                                        j++;
+                                    }
+
+                                    if (j < query.Length && query[j] == '.')
+                                    {
+                                        j++;
+                                        while (j < query.Length && char.IsWhiteSpace(query[j]))
+                                        {
+                                            j++;
+                                        }
+
+                                        if (j < query.Length && IsIdentifierStart(query[j]))
+                                        {
+                                            var identStart = j;
+                                            j++;
+                                            while (j < query.Length && IsIdentifierPart(query[j]))
+                                            {
+                                                j++;
+                                            }
+
+                                            sb.Append(query.Substring(identStart, j - identStart));
+                                            i = j - 1;
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                sb.Append(ch);
+            }
+
+            return sb.ToString();
+        }
+
         // This function was taken from
         // https://github.com/microsoft/Kusto-Query-Language/blob/master/src/Kusto.Language/readme.md
         public static HashSet<TableSymbol> GetDatabaseTables(KustoCode code)
@@ -694,6 +926,7 @@ namespace KQLAnalyzer
             query = NormalizeSingleBackslashSingleQuotedLiterals(query);
             query = NormalizeEmptyDoubleQuotedStrings(query);
             query = NormalizeKqlDoubleQuotedStringEscapes(query);
+            query = NormalizeWorkspaceQualifiedTableReferences(query);
             query = NormalizeExtractThreeArgumentCalls(query);
             query = NormalizeExtractRegexLiterals(query);
 
