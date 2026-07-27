@@ -11,12 +11,14 @@ public class Program
     /// <param name="environmentsFile">Environment configuration file to use. Defaults to ../environments.json.</param>
     /// <param name="rest">Start a REST server to listen for requests.</param>
     /// <param name="bindAddress">HTTP bind address to use in format http://host:port.</param>
+    /// <param name="debug">Enable debug message.</param>
 #pragma warning disable 8625
     public static void Main(
         FileInfo inputFile = null,
         FileInfo environmentsFile = null,
         bool rest = false,
-        string bindAddress = "http://localhost:8000"
+        string bindAddress = "http://localhost:8000",
+        bool debug = false
     )
 #pragma warning restore 8625
     {
@@ -39,7 +41,7 @@ public class Program
 
         if (rest)
         {
-            KQLAnalyzerRESTService.LaunchRestServer(bindAddress, kqlEnvironments);
+            KQLAnalyzerRESTService.LaunchRestServer(bindAddress, kqlEnvironments, debug);
             return;
         }
 
@@ -68,7 +70,8 @@ public class Program
             var results = KustoAnalyzer.AnalyzeQuery(
                 analyzeRequest.Query,
                 environment.ToGlobalState(),
-                analyzeRequest.LocalData
+                analyzeRequest.LocalData,
+                debug
             );
             Console.WriteLine(
                 JsonSerializer.Serialize(

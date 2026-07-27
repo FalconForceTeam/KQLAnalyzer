@@ -22,7 +22,8 @@ namespace KQLAnalyzerTests
             var results = KustoAnalyzer.AnalyzeQuery(
                 analyzeRequest.Query,
                 globals,
-                analyzeRequest.LocalData
+                analyzeRequest.LocalData,
+                false
             );
             return results;
         }
@@ -99,7 +100,7 @@ namespace KQLAnalyzerTests
                 results.OutputColumns,
                 new Dictionary<string, string> { { "output_foo", "string" } }
             );
-            Assert.Equal(results.ReferencedFunctions, new List<string> { "MyFunction" });
+            Assert.Equal(new List<string> { "MyFunction" }, results.ReferencedFunctions);
         }
 
         [Fact]
@@ -115,7 +116,7 @@ namespace KQLAnalyzerTests
             var results = AnalyzeFromJson("test_data/scalar_function.json");
             Assert.Empty(results.ParsingErrors);
             Assert.Equal(results.OutputColumns, new Dictionary<string, string> { { "a", "bool" } });
-            Assert.Equal(results.ReferencedFunctions, new List<string> { "MyScalar" });
+            Assert.Equal(new List<string> { "MyScalar" }, results.ReferencedFunctions);
         }
 
         [Fact]
@@ -134,7 +135,10 @@ namespace KQLAnalyzerTests
                     { "foo", "string" },
                 }
             );
-            Assert.Equal(results.ReferencedFunctions, new List<string> { "_GetWatchlist" });
+            Assert.Equal(
+                new List<string> { "_GetWatchlist", "strcat" },
+                results.ReferencedFunctions
+            );
         }
     }
 }

@@ -64,6 +64,36 @@ namespace KQLAnalyzer
             return functions;
         }
 
+        public static HashSet<string> GetQueryFunctions(KustoCode code)
+        {
+            var functions = new HashSet<string>();
+
+            SyntaxElement.WalkNodes(
+                code.Syntax,
+                n =>
+                {
+                    if (n is FunctionCallExpression fce && fce.ReferencedSymbol is FunctionSymbol fs)
+                    {
+                        functions.Add(fs.Name);
+                    }
+
+                    // Find dynamic expressions
+                    if (n is DynamicExpression de)
+                    {
+                        functions.Add("dynamic");
+                    }
+
+                    // Find materialize expressions
+                    if (n is MaterializeExpression me)
+                    {
+                        functions.Add("materialize");
+                    }
+                }
+            );
+
+            return functions;
+        }
+
         // This function was taken from
         // https://github.com/microsoft/Kusto-Query-Language/blob/master/src/Kusto.Language/readme.md
         public static HashSet<ColumnSymbol> GetDatabaseTableColumns(KustoCode code)
@@ -94,6 +124,131 @@ namespace KQLAnalyzer
                         !(n is FunctionDeclaration)
                 );
             }
+        }
+
+        public static HashSet<VariableSymbol> GetQueryVariables(KustoCode code)
+        {
+            var variables = new HashSet<VariableSymbol>();
+
+            SyntaxElement.WalkNodes(
+                code.Syntax,
+                n =>
+                {
+                    if (
+                        n.ReferencedSymbol is VariableSymbol v
+                    )
+                    {
+                        variables.Add(v);
+                    }
+                }
+            );
+
+            return variables;
+        }
+
+        public static HashSet<OperatorSymbol> GetQueryOperators(KustoCode code)
+        {
+            var operators = new HashSet<OperatorSymbol>();
+
+            SyntaxElement.WalkNodes(
+                code.Syntax,
+                n =>
+                {
+                    if (n.ReferencedSymbol is OperatorSymbol op)
+                    {
+                        operators.Add(op);
+                    }
+                }
+            );
+            return operators;
+        }
+
+        public static HashSet<string> GetQueryTabularOperators(KustoCode code)
+        {
+            var tabularOperators = new HashSet<string>();
+            var allOperators = code.Syntax.GetDescendants<QueryOperator>();
+
+            foreach (var op in allOperators)
+            {
+                // The first token of the operator is the keyword.
+                // See https://github.com/microsoft/Kusto-Query-Language/blob/a121c72b7b77e9977fd65aab065d0e0238285cde/src/Kusto.Language/Parser/QueryParser.cs#L4332
+                string? operatorKeyword = op.GetFirstToken()?.Text;
+
+                if (operatorKeyword is not null )
+                {
+                    tabularOperators.Add(operatorKeyword);
+                }
+            }
+
+            // Other tabular operators (based on https://learn.microsoft.com/en-us/kusto/query/queries?view=microsoft-fabric) that don't fall under the QueryOperator class
+            // e.g. https://github.com/microsoft/Kusto-Query-Language/blob/a121c72b7b77e9977fd65aab065d0e0238285cde/src/Kusto.Language.Generators/SyntaxNodeInfos.cs#L2749
+            // Notice that Base = "Expression", not "QueryOperator".
+            var otherTabularOperators = new HashSet<SyntaxKind>
+            {
+                SyntaxKind.ExternalDataExpression,
+                SyntaxKind.DataTableExpression,
+            };
+
+            var allNodes = code.Syntax.GetDescendants<SyntaxNode>();
+
+            foreach (var node in allNodes)
+            {
+                if (otherTabularOperators.Contains(node.Kind))
+                {
+                    string cleanName = string.Empty;
+                    string kindName = node.Kind.ToString();
+
+                    if (kindName.EndsWith("Expression"))
+                    {
+                        cleanName = kindName.Replace("Expression", string.Empty);
+                    }
+                    else
+                    {
+                        cleanName = kindName; // Defensive, this doesn't seem to happen in practice.
+                    }
+
+                    tabularOperators.Add(cleanName);
+                }
+            }
+
+            return tabularOperators;
+        }
+
+        public static HashSet<string> GetQueryStatements(KustoCode code)
+        {
+            var statements = new HashSet<string>();
+
+            SyntaxElement.WalkNodes(
+                code.Syntax,
+                n =>
+                {
+                    if (n is LetStatement)
+                    {
+                        statements.Add("let");
+                    }
+                    else if (n is PatternStatement)
+                    {
+                        statements.Add("pattern");
+                    }
+                    else if (n is RestrictStatement)
+                    {
+                        statements.Add("restrict");
+                    }
+                    else if (n is QueryParametersStatement)
+                    {
+                        // See https://github.com/microsoft/Kusto-Query-Language/blob/a121c72b7b77e9977fd65aab065d0e0238285cde/src/Kusto.Language.Generators/SyntaxNodeInfos.cs#L2553
+                        // Both 'declare' and 'query_parameters' are identified with the same SyntaxNode
+                        statements.Add("query_parameters");
+                        statements.Add("declare");
+                    }
+                    else if (n is SetOptionStatement)
+                    { // See http://github.com/microsoft/Kusto-Query-Language/blob/a121c72b7b77e9977fd65aab065d0e0238285cde/src/Kusto.Language.Generators/SyntaxNodeInfos.cs#L2517
+                        statements.Add("set");
+                    }
+                }
+            );
+
+            return statements;
         }
 
         // Helper function that will resolve an expression to a string.
@@ -180,7 +335,7 @@ namespace KQLAnalyzer
             );
         }
 
-        public static AnalyzeResults AnalyzeQuery(string query, GlobalState globals, LocalData localData)
+        public static AnalyzeResults AnalyzeQuery(string query, GlobalState globals, LocalData localData, bool debug, bool strictMode = false, string queryId = "")
         {
             // Keep track of how long it takes to analyze the query.
             var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -243,25 +398,102 @@ namespace KQLAnalyzer
 
             var queryResults = new AnalyzeResults();
 
+            if (!string.IsNullOrEmpty(queryId) && debug)
+            {
+                Console.WriteLine($"Analyzing query with ID: {queryId}");
+            }
+
             var code = KustoCode.ParseAndAnalyze(query, myGlobals);
 
             queryResults.ParsingErrors = code.GetDiagnostics().ToList();
+            if (!strictMode && queryResults.ParsingErrors.Any())
+            {
+                for (int i = queryResults.ParsingErrors.Count - 1; i >= 0; i--)
+                {
+                    var error = queryResults.ParsingErrors[i];
+                    if (error.Code == "KS141")
+                    {
+                        int startofLineIndex = query.LastIndexOf('\n', error.Start) + 1;
+                        int rawEndIndex = query.IndexOf('\n', error.End);
+                        int endOfLineIndex = rawEndIndex == -1 ? query.Length : rawEndIndex;
+                        string queryLine = query[startofLineIndex..endOfLineIndex];
+                        bool hasCoalesce = queryLine.Contains("coalesce(");
+                        if (hasCoalesce)
+                        {
+                            queryResults.ParsingErrors.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+
             queryResults.ReferencedTables = GetDatabaseTables(code).Select(t => t.Name).ToList();
-            queryResults.ReferencedFunctions = GetDatabaseFunctions(code)
+            queryResults.ReferencedDatabaseFunctions = GetDatabaseFunctions(code)
                 .Select(t => t.Name)
                 .ToList();
+            queryResults.ReferencedFunctions = GetQueryFunctions(code)
+                .Concat(queryResults.ReferencedDatabaseFunctions)
+                .Distinct()
+                .ToList();
+            if (debug)
+            {
+                Console.WriteLine("Functions found: " + string.Join(", ", queryResults.ReferencedFunctions));
+            }
+
             queryResults.ReferencedColumns = GetDatabaseTableColumns(code)
                 .Select(t => t.Name)
                 .ToList();
+            queryResults.ReferencedVariables = GetQueryVariables(code)
+                .Select(t => t.Name)
+                .ToList();
+            if (debug)
+            {
+                Console.WriteLine("Variables found: " + string.Join(", ", queryResults.ReferencedVariables));
+            }
+
+            queryResults.ReferencedOperators = GetQueryOperators(code)
+                .Select(t => t.Name)
+                .ToList();
+            queryResults.ReferencedTabularOperators = GetQueryTabularOperators(code)
+                .ToList();
+            queryResults.ReferencedOperators.AddRange(queryResults.ReferencedTabularOperators);
+            if (debug)
+            {
+                Console.WriteLine("Operators/Keywords found: " + string.Join(", ", queryResults.ReferencedOperators));
+            }
+
+            queryResults.ReferencedStatements = GetQueryStatements(code)
+                .ToList();
             if (code.ResultType != null)
             {
-                queryResults.OutputColumns = code.ResultType.Members
-                    .OfType<ColumnSymbol>()
-                    .ToDictionary(c => c.Name, c => c.Type.Name);
+                // the KQL Parse function introduces a column name that is used to store the parsed content.
+                // The KQL analyzer library has functionality to ensure that column names are unique or deduplicated if required.
+                // However, the KQL analyzer library does not use this functionality with regards to the Parse function so we need to do it ourselves here.
+                var columns = code.ResultType.Members.OfType<ColumnSymbol>();
+                var columnDictionary = new Dictionary<string, string>();
+
+                foreach (var col in columns)
+                {
+                    if (!columnDictionary.ContainsKey(col.Name))
+                    {
+                        columnDictionary.Add(col.Name, col.Type.Name);
+                    }
+                    else
+                    {
+                        if (debug)
+                        {
+                        Console.WriteLine($"WARNING: Found a duplicate column named '{col.Name}'. Skipping...");
+                        }
+
+                        continue;
+                    }
+                }
+
+                queryResults.OutputColumns = columnDictionary;
             }
 
             watch.Stop();
             queryResults.ElapsedMs = watch.ElapsedMilliseconds;
+
             return queryResults;
         }
 
