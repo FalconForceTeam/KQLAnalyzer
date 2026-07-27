@@ -1,0 +1,1 @@
+public class OperatorDetails : Dictionary<string, List<string>> { }
