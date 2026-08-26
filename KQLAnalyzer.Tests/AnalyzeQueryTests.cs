@@ -146,5 +146,23 @@ namespace KQLAnalyzerTests
             Assert.Empty(results.ParsingErrors);
             Assert.Equal("string", results.OutputColumns["x"]);
         }
+
+        [Fact]
+        public void IifWithEmptyDoubleQuotedLiteralFollowedByExtend()
+        {
+            // Regression test for the ASIM WebSession rendered-query failures. The failing
+            // shape is an iif() whose last argument is an empty double-quoted literal,
+            // immediately followed by an appended test extend line. KQLAnalyzer
+            // must normalize the empty literal and still parse the whole query.
+            var query =
+                "_Im_WebSession(starttime=ago(4h), endtime=now())\n"
+                + "| extend Name = iif(SrcUsername contains \"@\", tostring(split(SrcUsername, '@', 0)[0]), SrcUsername), UPNSuffix = iif(SrcUsername contains \"@\", tostring(split(SrcUsername, '@', 1)[0]), \"\")\n"
+                + "| extend test = strcat(\"test\")";
+            var globals = kqlEnvironments["sentinel"].ToGlobalState();
+            var results = KustoAnalyzer.AnalyzeQuery(query, globals, null);
+            Assert.Empty(results.ParsingErrors);
+            Assert.Equal("string", results.OutputColumns["UPNSuffix"]);
+            Assert.Equal("string", results.OutputColumns["test"]);
+        }
     }
 }

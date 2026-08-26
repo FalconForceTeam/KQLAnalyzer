@@ -922,10 +922,16 @@ namespace KQLAnalyzer
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var myGlobals = globals;
 
+            // Order matters. NormalizeKqlDoubleQuotedStringEscapes must run on the raw
+            // query before NormalizeEmptyDoubleQuotedStrings rewrites "" to ''. Otherwise
+            // the escape fixer sees the '' produced by the empty-literal normalizer in a
+            // query that also contains genuine double-quoted strings (e.g. @"..." already
+            // converted to "..."), which confuses its inDouble/inSingle state tracking and
+            // causes it to emit stray '\' characters at the original "" position.
             query = NormalizeKqlVerbatimDoubleQuotedStrings(query);
+            query = NormalizeKqlDoubleQuotedStringEscapes(query);
             query = NormalizeSingleBackslashSingleQuotedLiterals(query);
             query = NormalizeEmptyDoubleQuotedStrings(query);
-            query = NormalizeKqlDoubleQuotedStringEscapes(query);
             query = NormalizeWorkspaceQualifiedTableReferences(query);
             query = NormalizeExtractThreeArgumentCalls(query);
             query = NormalizeExtractRegexLiterals(query);
