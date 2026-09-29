@@ -530,6 +530,27 @@ namespace KQLAnalyzer
             var functionSymbols = new List<FunctionSymbol>();
             foreach (var function in functions)
             {
+                if (string.Equals(function.Value.OutputType, "inferred", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (function.Value.Parameters == null || string.IsNullOrWhiteSpace(function.Value.Query))
+                    {
+                        throw new ArgumentException(
+                            $"Inferred tabular function '{function.Key}' requires 'parameters' (empty for no arguments) and a non-empty 'query'."
+                        );
+                    }
+
+                    var declaration = function.Value.Parameters.Trim();
+                    if (!declaration.StartsWith("("))
+                    {
+                        declaration = "(" + declaration + ")";
+                    }
+
+                    // Let Kusto bind the body at each call site using the actual argument
+                    // schemas, including dependencies on other database functions/tables.
+                    functionSymbols.Add(new FunctionSymbol(function.Key, declaration, function.Value.Query));
+                    continue;
+                }
+
                 var parameters = function.Value.Arguments.Select(
                     p =>
                         new Parameter(

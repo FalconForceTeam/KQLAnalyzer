@@ -129,6 +129,41 @@ The `local_data` property can contain the following properties:
 * `tabular_functions` - A list of tabular functions that are present in the environment. A tabular function is a function that returns a table.
 * `watchlists` - A list of watchlists that are present in the environment and their corresponding custom output columns.
 
+For workspace functions whose output schema depends on their inputs, set
+`output_type` to `"inferred"` and supply the KQL `parameters` and `query`:
+
+```json
+{
+    "query": "print a=1 | invoke ExtendExample()",
+    "environment": "sentinel",
+    "local_data": {
+        "tabular_functions": {
+            "ExtendExample": {
+                "output_type": "inferred",
+                "parameters": "T:(*)",
+                "query": "T | extend foo=\"bar\""
+            }
+        }
+    }
+}
+```
+
+This returns `a: long` and `foo: string`. The Kusto semantic analyzer infers the
+schema at each call site using the actual input types; it does not execute the
+query or fetch data. Function bodies can use KQL operators, `let` statements,
+and other functions and tables supplied in the environment or `local_data`.
+Inference is subject to the Kusto language library's support; schemas that
+depend on data values cannot generally be determined without executing a query.
+As with other database functions, the library does not report all errors inside
+function bodies as diagnostics on the calling query; supply valid function definitions.
+
+For inferred functions, `parameters` is the authoritative KQL declaration
+(including table schemas and scalar defaults); `arguments` and `output_columns`
+are not used. Outer parentheses around `parameters` and braces around `query`
+are optional. Use `"parameters": ""` for functions without parameters. Both
+`parameters` and a non-empty `query` are required. Existing functions using
+`output_columns` continue to work as before.
+
 A more complex example that provides all of these is given below:
 ```
 {

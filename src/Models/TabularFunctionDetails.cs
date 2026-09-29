@@ -13,4 +13,13 @@ public class TabularFunctionDetails
 
     [JsonPropertyName("arguments")]
     public List<ArgumentDetails> Arguments { get; set; }
+
+    [JsonPropertyName("output_type")]
+    public string? OutputType { get; set; }
+
+    [JsonPropertyName("parameters")]
+    public string? Parameters { get; set; }
+
+    [JsonPropertyName("query")]
+    public string? Query { get; set; }
 }
