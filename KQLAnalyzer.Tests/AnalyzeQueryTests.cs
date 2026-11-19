@@ -70,6 +70,32 @@ namespace KQLAnalyzerTests
         }
 
         [Fact]
+        public void CustomTableOverridesExistingTable()
+        {
+            // AzureDiagnostics already exists in environments.json for sentinel.
+            // Providing a custom definition should override it, not duplicate (KS146).
+            var results = AnalyzeFromJson("test_data/custom_table_override_azurediagnostics.json");
+            Assert.Empty(results.ParsingErrors);
+            Assert.Equal(
+                results.OutputColumns,
+                new Dictionary<string, string>
+                {
+                    { "TimeGenerated", "datetime" },
+                    { "CustomColumn", "string" },
+                }
+            );
+
+            // Env-only columns from the original AzureDiagnostics must not remain after override.
+            var envColumnResults = AnalyzeFromJson(
+                "test_data/custom_table_override_azurediagnostics_env_column.json"
+            );
+            Assert.Contains(
+                envColumnResults.ParsingErrors,
+                e => e.Code == "KS142" && e.Message.Contains("TenantId")
+            );
+        }
+
+        [Fact]
         public void SentinelNoFileProfile()
         {
             var results = AnalyzeFromJson("test_data/sentinel_no_fileprofile.json");

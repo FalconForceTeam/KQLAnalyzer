@@ -2,18 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>1591,SA1633,SA1600,RCS0044,RCS1176,RCS1010,RCS1177,SA1111,SA1009,SA1118,SA1200,CA1050,SA1515,IDE0090,SA1413,SA1502</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Kusto.Language" Version="12.3.2" />
+    <PackageReference Include="Microsoft.Azure.Kusto.Language" Version="12.4.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22272.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.14" />
   </ItemGroup>
 </Project>

@@ -363,7 +363,7 @@ namespace KQLAnalyzer
 
                 myGlobals = myGlobals.WithDatabase(
                     myGlobals.Database.WithMembers(
-                        myGlobals.Database.Members.Concat(customWatchlists)
+                        MergeMembers(myGlobals.Database.Members, customWatchlists)
                     )
                 );
             }
@@ -372,7 +372,9 @@ namespace KQLAnalyzer
             {
                 var customTables = GetTables(localData.Tables);
                 myGlobals = myGlobals.WithDatabase(
-                    myGlobals.Database.WithMembers(myGlobals.Database.Members.Concat(customTables))
+                    myGlobals.Database.WithMembers(
+                        MergeMembers(myGlobals.Database.Members, customTables)
+                    )
                 );
             }
 
@@ -381,7 +383,7 @@ namespace KQLAnalyzer
                 var customFunctions = GetTabularFunctions(localData.TabularFunctions);
                 myGlobals = myGlobals.WithDatabase(
                     myGlobals.Database.WithMembers(
-                        myGlobals.Database.Members.Concat(customFunctions)
+                        MergeMembers(myGlobals.Database.Members, customFunctions)
                     )
                 );
             }
@@ -391,7 +393,7 @@ namespace KQLAnalyzer
                 var customFunctions = GetScalarFunctions(localData.ScalarFunctions);
                 myGlobals = myGlobals.WithDatabase(
                     myGlobals.Database.WithMembers(
-                        myGlobals.Database.Members.Concat(customFunctions)
+                        MergeMembers(myGlobals.Database.Members, customFunctions)
                     )
                 );
             }
@@ -425,6 +427,8 @@ namespace KQLAnalyzer
                     }
                 }
             }
+
+            queryResults.ParsingErrors.AddRange(GetCalledFunctionDiagnostics(code));
 
             queryResults.ReferencedTables = GetDatabaseTables(code).Select(t => t.Name).ToList();
             queryResults.ReferencedDatabaseFunctions = GetDatabaseFunctions(code)
@@ -495,6 +499,55 @@ namespace KQLAnalyzer
             queryResults.ElapsedMs = watch.ElapsedMilliseconds;
 
             return queryResults;
+        }
+
+        // Kusto reports diagnostics from a called function separately from the
+        // calling query. Map them to the outer call site so their locations remain
+        // meaningful in the query submitted by the client.
+        private static IEnumerable<Diagnostic> GetCalledFunctionDiagnostics(KustoCode code)
+        {
+            var diagnostics = new List<Diagnostic>();
+            var activeFunctions = new HashSet<FunctionSymbol>();
+
+            void Visit(SyntaxNode root, SyntaxNode? outerCall, List<string> path)
+            {
+                SyntaxElement.WalkNodes(
+                    root,
+                    fnBefore: node =>
+                    {
+                        if (node is not FunctionCallExpression call || call.ReferencedSymbol is not FunctionSymbol function)
+                        {
+                            return;
+                        }
+
+                        if (!activeFunctions.Add(function))
+                        {
+                            return;
+                        }
+
+                        path.Add(function.Name);
+                        var location = outerCall ?? call;
+                        foreach (var diagnostic in call.GetCalledFunctionDiagnostics())
+                        {
+                            diagnostics.Add(diagnostic
+                                .WithMessage($"In function '{string.Join("' -> '", path)}': {diagnostic.Message}")
+                                .WithLocation(location));
+                        }
+
+                        if (call.GetCalledFunctionBody() is SyntaxNode body)
+                        {
+                            Visit(body, location, path);
+                        }
+
+                        path.RemoveAt(path.Count - 1);
+                        activeFunctions.Remove(function);
+                    },
+                    fnDescend: node => node is not FunctionDeclaration
+                );
+            }
+
+            Visit(code.Syntax, null, new List<string>());
+            return diagnostics;
         }
 
         private static List<FunctionSymbol> GetScalarFunctions(
@@ -592,6 +645,25 @@ namespace KQLAnalyzer
             }
 
             return tableSymbols;
+        }
+
+        /// <summary>
+        /// Combines database members with local overrides. Members with the same name
+        /// (case-insensitive) are replaced by the override rather than duplicated.
+        /// </summary>
+        private static IEnumerable<Symbol> MergeMembers(
+            IEnumerable<Symbol> existing,
+            IEnumerable<Symbol> overrides)
+        {
+            var overrideList = overrides.ToList();
+            var overrideNames = new HashSet<string>(
+                overrideList.Select(s => s.Name),
+                StringComparer.OrdinalIgnoreCase
+            );
+
+            return existing
+                .Where(m => !overrideNames.Contains(m.Name))
+                .Concat(overrideList);
         }
     }
 }

@@ -105,6 +105,12 @@ The input format for the POST request is the same as the input format for the co
 
 The tool can parse Microsoft documentation to get schema information for the Sentinel and M365 Defender platforms.
 
+Install the Python dependency before updating schemas:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
 To update the the schema information based on the latest documentation, run the following command:
 ```
 ./update_schemas.sh
@@ -154,8 +160,9 @@ query or fetch data. Function bodies can use KQL operators, `let` statements,
 and other functions and tables supplied in the environment or `local_data`.
 Inference is subject to the Kusto language library's support; schemas that
 depend on data values cannot generally be determined without executing a query.
-As with other database functions, the library does not report all errors inside
-function bodies as diagnostics on the calling query; supply valid function definitions.
+Diagnostics in called function bodies are included in `parsing_errors`. Their
+messages identify the function call path, and their locations point to the
+outermost call in the submitted query. Uncalled function bodies are not checked.
 
 For inferred functions, `parameters` is the authoritative KQL declaration
 (including table schemas and scalar defaults); `arguments` and `output_columns`

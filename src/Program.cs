@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.CommandLine;
 using System.Text.Json;
 using KQLAnalyzer;
 
@@ -7,20 +7,31 @@ public class Program
     /// <summary>
     /// KustoQueryAnalyzer can analyze a Kusto query and returns metadata about the query.
     /// </summary>
-    /// <param name="inputFile">Analyze query from JSON file.</param>
-    /// <param name="environmentsFile">Environment configuration file to use. Defaults to ../environments.json.</param>
-    /// <param name="rest">Start a REST server to listen for requests.</param>
-    /// <param name="bindAddress">HTTP bind address to use in format http://host:port.</param>
-    /// <param name="debug">Enable debug message.</param>
-#pragma warning disable 8625
-    public static void Main(
-        FileInfo inputFile = null,
-        FileInfo environmentsFile = null,
-        bool rest = false,
-        string bindAddress = "http://localhost:8000",
-        bool debug = false
-    )
-#pragma warning restore 8625
+    public static int Main(string[] args)
+    {
+        var inputFile = new Option<FileInfo?>("--input-file") { Description = "Analyze query from JSON file." };
+        var environmentsFile = new Option<FileInfo?>("--environments-file") { Description = "Environment configuration file (default: ../environments.json)." };
+        var rest = new Option<bool>("--rest") { Description = "Start a REST server to listen for requests." };
+        var bindAddress = new Option<string>("--bind-address")
+        {
+            Description = "HTTP bind address in the format http://host:port.",
+            DefaultValueFactory = _ => "http://localhost:8000",
+        };
+        var debug = new Option<bool>("--debug") { Description = "Enable debug messages." };
+        var command = new RootCommand("Analyze a Kusto query and return its metadata.")
+        {
+            inputFile, environmentsFile, rest, bindAddress, debug,
+        };
+        command.SetAction(result => Run(
+            result.GetValue(inputFile),
+            result.GetValue(environmentsFile),
+            result.GetValue(rest),
+            result.GetValue(bindAddress)!,
+            result.GetValue(debug)));
+        return command.Parse(args).Invoke();
+    }
+
+    private static void Run(FileInfo? inputFile, FileInfo? environmentsFile, bool rest, string bindAddress, bool debug)
     {
         environmentsFile = environmentsFile ?? new FileInfo(Path.Join("..", "environments.json"));
         var kqlEnvironments = new KQLEnvironments();

@@ -107,6 +107,50 @@ namespace KQLAnalyzerTests
         }
 
         [Fact]
+        public void ReportsInvalidBodyAtCallSite()
+        {
+            const string query = "print a=1 | invoke InvalidBody() | project broken";
+            var result = Analyze(query, ("InvalidBody", Function("T:(*)", "T | extend broken=missing_column")));
+
+            var error = Assert.Single(result.ParsingErrors, e => e.Code == "KS142");
+            Assert.Contains("InvalidBody", error.Message);
+            Assert.Contains("missing_column", error.Message);
+            Assert.Equal("InvalidBody()", query.Substring(error.Start, error.Length));
+        }
+
+        [Fact]
+        public void ReportsNestedBodyErrorsAtOuterCallSite()
+        {
+            const string query = "print a=1 | invoke Nested()";
+            var result = Analyze(query,
+                ("Nested", Function("T:(*)", "T | invoke InvalidBody()")),
+                ("InvalidBody", Function("T:(*)", "T | extend broken=missing_column")));
+
+            var error = Assert.Single(result.ParsingErrors, e => e.Code == "KS142");
+            Assert.Contains("Nested' -> 'InvalidBody", error.Message);
+            Assert.Equal("Nested()", query.Substring(error.Start, error.Length));
+        }
+
+        [Fact]
+        public void ChecksEachCallWithItsOwnInputSchema()
+        {
+            var result = Analyze("""
+                let A = (print value=1) | invoke UseValue();
+                let B = (print other=1) | invoke UseValue();
+                union A, B
+                """, ("UseValue", Function("T:(*)", "T | extend result=value")));
+
+            Assert.Single(result.ParsingErrors, e => e.Code == "KS142" && e.Message.Contains("value"));
+        }
+
+        [Fact]
+        public void DoesNotReportErrorsInUnusedFunctionBodies()
+        {
+            var result = Analyze("print a=1", ("InvalidBody", Function("T:(*)", "T | extend broken=missing_column")));
+            Assert.Empty(result.ParsingErrors);
+        }
+
+        [Fact]
         public void ResolvesLocalTablesAndScalarFunctionsInBody()
         {
             var localData = new LocalData
